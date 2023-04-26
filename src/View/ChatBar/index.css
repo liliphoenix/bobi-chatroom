@@ -1,0 +1,18 @@
+.chat-bar{
+  height: 100%;
+  position: relative;
+  top: -70px;
+}
+.ant-list-item{
+  padding:0 20px;
+  cursor: pointer;
+
+}
+.active{
+  
+}
+.ant-list-item:hover{
+
+  background-color:  rgba(228, 228, 228, 0.3)
+
+}
