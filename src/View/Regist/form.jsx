@@ -12,8 +12,8 @@ const App = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const [value, changeValue] = useState({
-    username: "lwb",
-    password: "123456",
+    username: "",
+    password: "",
     mobile: "",
     nickname: "",
     avator: ""
@@ -117,7 +117,7 @@ const App = () => {
 
       <Form.Item className='login-btn'>
         <Button onClick={() => { login() }} type="primary" htmlType="submit" className="login-form-button">
-          登录
+          注册
         </Button>
       </Form.Item>
       <img src="http://localhost:3006/upload/1678929505501.png" alt="" />

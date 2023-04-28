@@ -5,24 +5,25 @@ import { Typography, Button, Checkbox, Form, Input } from 'antd';
 // import { login } from "../../api/user"
 import { useDispatch } from "react-redux"
 import { useNavigate } from 'react-router-dom'
-import { getToken } from '../../store/features/userSlice';
+import { loginAsync } from '../../store/features/userSlice';
 const { Title } = Typography;
 const App = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const [value, changeValue] = useState({
-    username: "lwb",
-    password: "123456"
+    username: "",
+    password: ""
   })
   const onFinish = (values) => {
-  };
+  }
   const [userInfo, changeInfo] = useState({
-    username: "lwb",
-    password: "123456"
+    username: "",
+    password: ""
   })
   const login = async () => {
     try {
-      const res = await dispatch(getToken(userInfo))
+      const res = await dispatch(loginAsync(userInfo))
+      console.log(res.error);
       if (res.error) {
       } else {
         navigate("/chatroom")
@@ -46,7 +47,7 @@ const App = () => {
       }
     })
 
-    console.log("render");
+
   }
 
 
@@ -88,10 +89,10 @@ const App = () => {
         <Button onClick={() => { login() }} type="primary" htmlType="submit" className="login-form-button">
           登录
         </Button>
-        <div className='regist'>还没有账号？<a href="">注册一个</a></div>
+        <div className='regist'>还没有账号？<a href="" onClick={()=>navigate("/regist")}>注册一个</a></div>
       </Form.Item>
     </Form>
-  );
-};
+  )
+}
 
-export default App;
+export default App

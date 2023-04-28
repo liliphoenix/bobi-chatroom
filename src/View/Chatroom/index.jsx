@@ -1,58 +1,76 @@
-import { useEffect, useRef, useState } from "react"
-import { Input, Form } from 'antd'
+import { useEffect, useState } from "react"
+import { Input, Form,Spin } from 'antd'
 import { useSelector, useDispatch } from "react-redux"
-import { firstConnect } from "../../Hooks/useSocket";
-import { getMessageAsync } from "../../store/features/message";
-import io from "socket.io-client";
-import "./index.css"
+import { addMessage, getRoomMsgAsync } from "../../store/features/message";
+import "./index.less"
 import PopoverChat from "../../Hooks/chatProp";
-const socket = io("http://127.0.0.1:3006")
+// const socket = io("http://127.0.0.1:3006")
+import socket from "../../Hooks/useSocket";
 const { TextArea } = Input;
 const Chatroom = (props) => {
   let [content, changeCon] = useState()
   let [list, changeList] = useState([])
-  const listRef = useRef([])
-  let { message } = useSelector((state) => state.msg)
+  let {userInfo} = useSelector((store) => store.user)
+  let { message,toUser } = useSelector((state) => state.msg)  
+  let [loading,setLoading]=useState(false)
   const dispatch = useDispatch()
-  const userInfo = useSelector((store) => store.user.userInfo)
   const form = Form.useForm()[0]
-  useEffect(() => {
-    firstConnect()
-  })
-
   // 获取message
   useEffect(() => {
     (async ()=>{
       if (!message) {
        try {
-        await dispatch(getMessageAsync())
+        setLoading(true)
+        await dispatch(getRoomMsgAsync({
+          username:userInfo.username,
+          toUser:toUser.username
+        }))
        } catch (error) {
-        console.log("");
        }
       }
     })()
-
-  }, [])
+  }, [userInfo])
   useEffect(()=>{
     if(!message)message=[]
+    if(message.length>0){
+      setLoading(false)
+    }
     changeList(message)
+
   },[message])
+
+  // 对话频道切换时
+  useEffect(()=>{
+    (async ()=>{
+       try {
+        await dispatch(getRoomMsgAsync({
+          username:userInfo.username,
+          toUser:toUser.username
+        }))
+       } catch (error) {
+       }
+    })()
+  },[toUser])
   const changeContent = (e) => {
     changeCon(content = e.target.value)
   }
   useEffect(() => {
-    listRef.current = list
-  }, [list])
-  let arr= [...list]
-  useEffect(() => {
     socket.on("sending", (data) => {
-      const arr = [...listRef.current]
-      arr.push(data)
-      changeList(arr)
-      var element = document.getElementById("show-chat");
-      setTimeout(() => {
-        element.scrollTop = element.scrollHeight + 2300;
-      })
+      console.log(data);
+      console.log(sessionStorage.getItem("username"));
+      if(data.toUser===sessionStorage.getItem("toUser")){
+        dispatch(addMessage(data))
+        var element = document.getElementById("show-chat");
+        setTimeout(() => {
+          element.scrollTop = element.scrollHeight + 2300;
+        })
+      }else if(sessionStorage.getItem("toUser")===data.username&&data.toUser===sessionStorage.getItem("username")){
+        dispatch(addMessage(data))
+        var element = document.getElementById("show-chat");
+        setTimeout(() => {
+          element.scrollTop = element.scrollHeight + 2300;
+        })
+      }
     })
   }, [socket])
   useEffect(() => {
@@ -66,17 +84,20 @@ const Chatroom = (props) => {
       createTime: new Date(),
       username: userInfo.username,
       content: content,
-      toUser: "room1",
+      toUser: toUser.username,
       avator: userInfo.avator
     }
-    form.resetFields()
+    form.resetFields()   
     socket.emit("message", data)
   }
   return (
     <div>
+      <Spin spinning={loading}>
       <div style={{ height: "380px" }} className="show-chat" id="show-chat">
-        {list.map((item) => (
-          <PopoverChat item={item}></PopoverChat>
+        {list.map((item,index) => (
+          <div key={index}>
+            <PopoverChat  item={item}></PopoverChat>
+          </div>
         ))}
       </div>
       <div className="toolbar">123</div>
@@ -93,6 +114,7 @@ const Chatroom = (props) => {
           </Form.Item>
         </Form>
       </div>
+      </Spin>
     </div>
   )
 }
